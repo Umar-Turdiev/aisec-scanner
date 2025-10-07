@@ -6,19 +6,24 @@ if [ -z "${TARGET_REPO:-}" ]; then
   exit 2
 fi
 
-OUT_DIR=${OUT_DIR:-/out}
-OUT_FILE=${OUT_FILE:-semgrep-$(date -u +%Y%m%dT%H%M%SZ).sarif}
+# Always write to /out, auto-name file as <repo>-<timestamp>.sarif
+OUT_DIR="/out"
+REPO_NAME=$(basename -s .git "$TARGET_REPO")
+TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
+OUT_FILE="${REPO_NAME}-${TIMESTAMP}.sarif"
 
 mkdir -p "$OUT_DIR" /work /src
+
 echo "Cloning $TARGET_REPO ..."
 git clone --depth 1 "$TARGET_REPO" /src/repo
 
 cd /src/repo
 echo "Running Semgrep..."
+
 semgrep scan \
   --config /rules/agent-security \
   --sarif \
   --quiet \
-  --output /out/semgrep.sarif || true
+  --output "$OUT_DIR/$OUT_FILE" || true
 
-echo "Done. Results at $OUT_DIR/$OUT_FILE"
+echo "Done. Results saved to $OUT_DIR/$OUT_FILE"
