@@ -53,7 +53,7 @@ semgrep scan \
   --sarif --output /out/semgrep.sarif
 ```
 
-Run docker container
+Run docker container with semgrep repository
 
 docker build -t test .
-docker run --rm -e TARGET_REPO="https://github.com/Umar-Turdiev/aisec-dashboard" -v "$(pwd)/out:/out" test
+docker run --rm -e TARGET_REPO="https://github.com/semgrep/semgrep" -v "$(pwd)/out:/out" test

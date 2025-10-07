@@ -26,7 +26,8 @@ semgrep scan \
   --quiet \
   --output "$OUT_DIR/$OUT_FILE" || true
 
-jq '.runs[].tool.driver.rules = []' "$OUT_DIR/$OUT_FILE" > "$OUT_DIR/$OUT_FILE.json"
+#removes rules from output and deletes sarif file in place of json
+jq '[.runs[].results[]]' "$OUT_DIR/$OUT_FILE" > "$OUT_DIR/$OUT_FILE.json"
 rm "$OUT_DIR/$OUT_FILE"
 
 echo "Done. Results saved to $OUT_DIR/$OUT_FILE.json"
