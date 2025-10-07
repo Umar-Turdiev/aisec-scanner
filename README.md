@@ -21,10 +21,11 @@ docker build -t aisec-scanner:latest .
 ## Example local run
 
 ```bash
+mkdir -p out
 docker run --rm \
-  -e TARGET_REPO="https://github.com/psf/requests" \
-  -v "$PWD/out:/out" \
-  aisec-scanner:latest
+  -e TARGET_REPO=https://github.com/psf/requests.git \
+  -v "$(pwd)/out:/out" \
+  aisec-scanner
 ```
 
 Logs stream in the console. SARIF lands at `./out/semgrep.sarif`.
