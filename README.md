@@ -52,3 +52,8 @@ semgrep scan \
   --timeout 240 \
   --sarif --output /out/semgrep.sarif
 ```
+
+Run docker container
+
+docker build -t test .
+docker run --rm -e TARGET_REPO="https://github.com/Umar-Turdiev/aisec-dashboard" -v "$(pwd)/out:/out" test

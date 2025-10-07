@@ -26,4 +26,7 @@ semgrep scan \
   --quiet \
   --output "$OUT_DIR/$OUT_FILE" || true
 
-echo "Done. Results saved to $OUT_DIR/$OUT_FILE"
+jq '.runs[].tool.driver.rules = []' "$OUT_DIR/$OUT_FILE" > "$OUT_DIR/$OUT_FILE.json"
+rm "$OUT_DIR/$OUT_FILE"
+
+echo "Done. Results saved to $OUT_DIR/$OUT_FILE.json"
