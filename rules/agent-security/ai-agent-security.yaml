@@ -1,0 +1,116 @@
+rules:
+  # 1) LLM output -> shell (Python)
+  - id: ai.llm.output.to.shell.python
+    languages: [python]
+    severity: ERROR
+    message: LLM output flows into a shell command. Validate/whitelist or sandbox. (OWASP LLM02)
+    metadata: {owasp_llm: "LLM02", agentic: "T11/T2", cwe: "78"}
+    patterns:
+      - pattern-either:
+          - pattern: os.system($CMD)
+          - pattern: subprocess.run($CMD, shell=True, ...)
+          - pattern: subprocess.Popen($CMD, shell=True, ...)
+
+  # 2) LLM output -> shell (Node)
+  - id: ai.llm.output.to.shell.node
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: LLM output flows into child_process.*. Validate/whitelist or sandbox. (OWASP LLM02)
+    metadata: {owasp_llm: "LLM02", agentic: "T11/T2", cwe: "78"}
+    patterns:
+      - pattern-either:
+          - pattern: require('child_process').exec($CMD)
+          - pattern: require('child_process').execSync($CMD)
+
+  # 3) Dynamic tool dispatch controlled by model output
+  - id: ai.agent.dynamic-tool-dispatch
+    languages: [python, javascript, typescript]
+    severity: WARNING
+    message: Model-controlled tool/function dispatch without allowlist. Add strict mapping & schema validation. (LLM08 / Agentic T2)
+    metadata: {owasp_llm: "LLM08", agentic: "T2", cwe: "841"}
+    patterns:
+      - pattern-either:
+          - pattern: $MAP[$NAME](...)
+          - pattern: $TOOLS[$NAME](...)
+      - pattern-not: $MAP["..."](...)
+      - pattern-not: $TOOLS["..."](...)
+
+  # 4) Executing LLM-generated code (Python)
+  - id: ai.llm.eval.exec
+    languages: [python]
+    severity: ERROR
+    message: Executing/evaluating LLM-generated code. Use a hardened sandbox or remove. (Agentic T11 / LLM02)
+    metadata: {agentic: "T11", owasp_llm: "LLM02", cwe: "94"}
+    pattern-either:
+      - pattern: eval($CODE)
+      - pattern: exec($CODE)
+
+  # 5) Executing LLM-generated code (Node vm)
+  - id: ai.llm.vm.runincontext
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Executing dynamic code via vm.*. Lock down or remove. (Agentic T11 / LLM02)
+    metadata: {agentic: "T11", owasp_llm: "LLM02", cwe: "94"}
+    pattern-either:
+      - pattern: require('vm').runInNewContext($CODE, ...)
+      - pattern: require('vm').runInThisContext($CODE, ...)
+
+  # 6) Service token for user-initiated actions (JS)
+  - id: ai.agent.confused-deputy.service-token.js
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Service credential used for user-initiated action; risk of confused-deputy. Prefer user-bound tokens or consent gate. (Agentic T9)
+    metadata: {agentic: "T9", cwe: "285"}
+    patterns:
+      - pattern-either:
+          - pattern: |
+              fetch($URL, { headers: { Authorization: "Bearer " + process.env.SERVICE_TOKEN } })
+          - pattern: |
+              axios.$METHOD($URL, { headers: { Authorization: "Bearer " + process.env.SERVICE_TOKEN } })
+
+  # 7) Service token for user-initiated actions (Python)
+  - id: ai.agent.confused-deputy.service-token.py
+    languages: [python]
+    severity: WARNING
+    message: Service credential used for user-initiated action; risk of confused-deputy. Prefer user-bound tokens or consent gate. (Agentic T9)
+    metadata: {agentic: "T9", cwe: "285"}
+    pattern-either:
+      - pattern: |
+          requests.$METHOD($URL, headers={"Authorization": f"Bearer {os.environ['SERVICE_TOKEN']}"})
+
+  # 8) Memory poisoning: writing to vector DB w/out provenance
+  - id: ai.agent.memory-poisoning.vector-upsert
+    languages: [python, javascript, typescript]
+    severity: WARNING
+    message: Upserting content to vector DB without provenance/validation. Add source attribution & trust checks. (Agentic T1)
+    metadata: {agentic: "T1", owasp_llm: "LLM08"}
+    patterns:
+      - pattern-either:
+          - pattern: |
+              index.upsert([{id: $ID, values: $EMB, metadata: $META}])
+          - pattern: |
+              await index.upsert([{id: $ID, values: $EMB, metadata: $META}])
+      - pattern-not: |
+          index.upsert([{id: $ID, values: $EMB, metadata: {..., source: $SRC, provenance: $PROV, ...}}])
+
+  # 9) Unbounded agent loop (JS)
+  - id: ai.agent.unbounded-loop.js
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: Agent loop without max iterations / timeouts. Add guards. (Agentic T4 / LLM04)
+    metadata: {agentic: "T4", owasp_llm: "LLM04", cwe: "400"}
+    pattern-either:
+      - pattern: |
+          while (true) { ... }
+      - pattern: |
+          for (;;) { ... }
+
+  # 10) Unbounded agent loop (Python)
+  - id: ai.agent.unbounded-loop.py
+    languages: [python]
+    severity: WARNING
+    message: Agent loop without max iterations / timeouts. Add guards. (Agentic T4 / LLM04)
+    metadata: {agentic: "T4", owasp_llm: "LLM04", cwe: "400"}
+    pattern: |
+      while True:
+        ...
