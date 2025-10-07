@@ -7,6 +7,7 @@ COPY rules /rules
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+
 # Workdir for cloning targets
 WORKDIR /work
 

@@ -10,7 +10,7 @@ fi
 OUT_DIR="/out"
 REPO_NAME=$(basename -s .git "$TARGET_REPO")
 TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-OUT_FILE="${REPO_NAME}-${TIMESTAMP}.sarif"
+OUT_FILE="${REPO_NAME}-${TIMESTAMP}"
 
 mkdir -p "$OUT_DIR" /work /src
 
@@ -24,10 +24,13 @@ semgrep scan \
   --config /rules/agent-security \
   --sarif \
   --quiet \
-  --output "$OUT_DIR/$OUT_FILE" || true
+  --output "$OUT_DIR/$OUT_FILE.sarif" || true
 
 #removes rules from output and deletes sarif file in place of json
-jq '[.runs[].results[]]' "$OUT_DIR/$OUT_FILE" > "$OUT_DIR/$OUT_FILE.json"
-rm "$OUT_DIR/$OUT_FILE"
+jq '[.runs[].results[]]' "$OUT_DIR/$OUT_FILE.sarif" > "$OUT_DIR/$OUT_FILE.json"
+rm "$OUT_DIR/$OUT_FILE.sarif"
 
 echo "Done. Results saved to $OUT_DIR/$OUT_FILE.json"
+
+# aws s3 cp $OUT_DIR/$OUT_FILE.json s3://aisec-results/$OUT_FILE.json
+# echo "$OUT_DIR/$OUT_FILE.json saved to S3"
