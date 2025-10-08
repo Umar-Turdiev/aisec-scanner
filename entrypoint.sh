@@ -31,6 +31,7 @@ jq '[.runs[].results[]]' "$OUT_DIR/$OUT_FILE.sarif" > "$OUT_DIR/$OUT_FILE.json"
 rm "$OUT_DIR/$OUT_FILE.sarif"
 
 echo "Done. Results saved to $OUT_DIR/$OUT_FILE.json"
+cat "$OUT_DIR/$OUT_FILE.json"
 
 # aws s3 cp $OUT_DIR/$OUT_FILE.json s3://aisec-results/$OUT_FILE.json
 # echo "$OUT_DIR/$OUT_FILE.json saved to S3"
