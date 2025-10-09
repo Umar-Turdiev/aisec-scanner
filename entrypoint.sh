@@ -8,9 +8,10 @@ fi
 
 # Always write to /out, auto-name file as <repo>-<timestamp>.sarif
 OUT_DIR="/out"
+OWNER=$(basename $(dirname "$TARGET_REPO"))
 REPO_NAME=$(basename -s .git "$TARGET_REPO")
 TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-OUT_FILE="${REPO_NAME}-${TIMESTAMP}"
+OUT_FILE="semgrep-results-${OWNER}-${REPO_NAME}-${TIMESTAMP}"
 
 mkdir -p "$OUT_DIR" /work /src
 

@@ -57,3 +57,6 @@ Run docker container with semgrep repository
 
 docker build -t test .
 docker run --rm -e TARGET_REPO="https://github.com/semgrep/semgrep" -v "$(pwd)/out:/out" test
+
+docker build -t test .
+docker run --rm -e TARGET_REPO="https://github.com/bereft-souls/bereft-souls" -v "$(pwd)/out:/out" test
