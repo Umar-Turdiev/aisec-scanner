@@ -31,7 +31,8 @@ jq '[.runs[].results[]]' "$OUT_DIR/$OUT_FILE.sarif" > "$OUT_DIR/$OUT_FILE.json"
 rm "$OUT_DIR/$OUT_FILE.sarif"
 
 echo "Done. Results saved to $OUT_DIR/$OUT_FILE.json"
-cat "$OUT_DIR/$OUT_FILE.json"
 
-# aws s3 cp $OUT_DIR/$OUT_FILE.json s3://aisec-results/$OUT_FILE.json
-# echo "$OUT_DIR/$OUT_FILE.json saved to S3"
+curl -X POST \
+     --json "$(jq -n --arg file "$OUT_FILE.json" --slurpfile data "$OUT_DIR/$OUT_FILE.json" \
+      '{filename: $file, results: $data[0]}')" \
+     "https://e6ot7574phpdg6mr57ixq4qzby0ezlpy.lambda-url.us-east-2.on.aws/"
