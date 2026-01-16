@@ -53,10 +53,17 @@ semgrep scan \
   --sarif --output /out/semgrep.sarif
 ```
 
-Run docker container with semgrep repository
-
 docker build -t test .
 docker run --rm -e TARGET_REPO="https://github.com/semgrep/semgrep" -v "$(pwd)/out:/out" test
 
 docker build -t test .
 docker run --rm -e TARGET_REPO="https://github.com/bereft-souls/bereft-souls" -v "$(pwd)/out:/out" test
+
+docker build -t test .
+docker run --rm -e TARGET_REPO="https://github.com/dehvCurtis/vulnerable-code-examples" -v "$(pwd)/out:/out" test
+
+docker build -t test .
+docker run --rm -e TARGET_REPO="https://github.com/Kayden-F-Pham/vulnerable-code-examples" -v "$(pwd)/out:/out" test
+
+docker build -t test .
+docker run --rm -e TARGET_REPO="https://github.com/Kayden-F-Pham/vulnerable-code-examples" -e TARGET_BRANCH="auto-security-fix" -v "$(pwd)/out:/out" test

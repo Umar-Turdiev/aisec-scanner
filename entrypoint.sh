@@ -6,6 +6,9 @@ if [ -z "${TARGET_REPO:-}" ]; then
   exit 2
 fi
 
+# Optional branch (defaults to repo default branch)
+TARGET_BRANCH="${TARGET_BRANCH:-}"
+
 # Always write to /out, auto-name file as <repo>-<timestamp>.sarif
 OUT_DIR="/out"
 OWNER=$(basename $(dirname "$TARGET_REPO"))
@@ -16,9 +19,21 @@ OUT_FILE="semgrep-results-${OWNER}-${REPO_NAME}-${TIMESTAMP}"
 mkdir -p "$OUT_DIR" /work /src
 
 echo "Cloning $TARGET_REPO ..."
-git clone --depth 1 "$TARGET_REPO" /src/repo
+if [ -n "$TARGET_BRANCH" ]; then
+  echo "Using branch: $TARGET_BRANCH"
+  git clone --depth 1 --branch "$TARGET_BRANCH" "$TARGET_REPO" /src/repo
+else
+  git clone --depth 1 "$TARGET_REPO" /src/repo
+fi
 
 cd /src/repo
+
+echo "Listing files in repo root (first level only)..."
+
+ROOT_FILES=$(find . -maxdepth 1 -type f ! -name ".git*")
+
+echo "$ROOT_FILES"
+
 echo "Running Semgrep..."
 
 semgrep scan \
@@ -36,4 +51,4 @@ echo "Done. Results saved to $OUT_DIR/$OUT_FILE.json"
 curl -X POST \
      --json "$(jq -n --arg file "$OUT_FILE.json" --slurpfile data "$OUT_DIR/$OUT_FILE.json" \
       '{filename: $file, results: $data[0]}')" \
-     "https://e6ot7574phpdg6mr57ixq4qzby0ezlpy.lambda-url.us-east-2.on.aws/"
+     "https://cwhwxshijq7ayeq53f7owartqa0jjkub.lambda-url.us-east-2.on.aws/"
